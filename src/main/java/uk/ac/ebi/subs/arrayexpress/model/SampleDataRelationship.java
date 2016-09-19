@@ -5,11 +5,13 @@ import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.data.submittable.Sample;
 
+import java.util.List;
+
 public class SampleDataRelationship {
 
     Assay assay;
     Sample sample;
-    AssayData assayData;
+    List<AssayData> assayData;
 
     public Assay getAssay() {
         return assay;
@@ -27,11 +29,11 @@ public class SampleDataRelationship {
         this.sample = sample;
     }
 
-    public AssayData getAssayData() {
+    public List<AssayData> getAssayData() {
         return assayData;
     }
 
-    public void setAssayData(AssayData assayData) {
+    public void setAssayData(List<AssayData> assayData) {
         this.assayData = assayData;
     }
 }

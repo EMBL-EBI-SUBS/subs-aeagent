@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.data.submittable.*;
 import uk.ac.ebi.subs.messaging.Channels;
 import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -70,8 +71,10 @@ public class ArrayExpressSubmissionProcessor {
         study.setStatus(processedStatusValue);
         for (SampleDataRelationship sdr : arrayExpressStudy.getSampleDataRelationships()){
 
-            for (Submittable s : Arrays.asList((Submittable)sdr.getAssay(),(Submittable)sdr.getAssayData())){
-                s.setStatus(processedStatusValue);
+            sdr.getAssay().setStatus(processedStatusValue);
+
+            for (AssayData ad : sdr.getAssayData()){
+                ad.setStatus(processedStatusValue);
             }
         }
     }
@@ -94,11 +97,7 @@ public class ArrayExpressSubmissionProcessor {
                 .filter(ad -> ad.getArchive() == Archive.ArrayExpress && ad.getAssayRef().isMatch(assay))
                 .collect(Collectors.toList());
 
-        if (assayData.size() != 1){
-            throw new RuntimeException("Need 1 assay data for assay "+assay);
-        }
-
-        sdr.setAssayData(assayData.get(0));
+        sdr.setAssayData(assayData);
 
         arrayExpressStudy.getSampleDataRelationships().add(sdr);
     }
