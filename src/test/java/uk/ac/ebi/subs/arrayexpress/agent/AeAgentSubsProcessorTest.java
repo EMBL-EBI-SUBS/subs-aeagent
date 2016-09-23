@@ -7,8 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ArrayExpressAgentApplication;
-import uk.ac.ebi.subs.data.component.Archive;
-import uk.ac.ebi.subs.data.component.Domain;
+import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.submittable.*;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -70,14 +69,14 @@ public class AeAgentSubsProcessorTest {
         as = new Assay();
         as.setArchive(Archive.ArrayExpress);
         as.setAlias("exp1");
-        as.setSampleRef(sa.asRef());
-        as.setStudyRef(st.asRef());
+        as.setSampleRef((SampleRef) sa.asRef());
+        as.setStudyRef((StudyRef)st.asRef());
         as.setDomain(domain);
 
         ad = new AssayData();
         ad.setAlias("run1");
         ad.setArchive(Archive.ArrayExpress);
-        ad.setAssayRef(as.asRef());
+        ad.setAssayRef((AssayRef) as.asRef());
         ad.setDomain(domain);
 
         enaStudy = new Study();
