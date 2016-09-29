@@ -1,5 +1,7 @@
 package uk.ac.ebi.subs.arrayexpress.agent;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 @Component
 public class ArrayExpressSubmissionProcessor {
 
+    private static final Logger logger = LoggerFactory.getLogger(ArrayExpressSubmissionProcessor.class);
+
     String processedStatusValue = "processed";
 
     @Autowired
@@ -38,9 +42,16 @@ public class ArrayExpressSubmissionProcessor {
     @RabbitListener(queues = {Channels.AE_PROCESSING})
     public void handleSubmission(Submission submission) {
 
+        logger.info("received submission {}",submission.getId());
+
         processSubmission(submission);
 
+        logger.info("processed submission {}",submission.getId());
+
         rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, submission);
+
+        logger.info("sent submission {}",submission.getId());
+
     }
 
     public void processSubmission(Submission submission) {
