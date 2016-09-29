@@ -48,9 +48,6 @@ public class ArrayExpressSubmissionProcessor {
 
         logger.info("processed submission {}",submission.getId());
 
-        //TODO debug stuff
-        submission.setLastHandler(this.getClass().toString());
-
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, submission);
 
         logger.info("sent submission {}",submission.getId());
