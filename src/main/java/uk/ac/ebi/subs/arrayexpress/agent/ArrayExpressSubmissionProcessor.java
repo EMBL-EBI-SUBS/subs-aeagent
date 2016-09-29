@@ -11,11 +11,11 @@ import uk.ac.ebi.subs.arrayexpress.model.ArrayExpressStudy;
 import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.submittable.*;
-import uk.ac.ebi.subs.messaging.Channels;
+import uk.ac.ebi.subs.messaging.Exchanges;
+import uk.ac.ebi.subs.messaging.Queues;
+import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,7 +39,7 @@ public class ArrayExpressSubmissionProcessor {
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
     }
 
-    @RabbitListener(queues = {Channels.AE_PROCESSING})
+    @RabbitListener(queues = {Queues.AE_AGENT})
     public void handleSubmission(Submission submission) {
 
         logger.info("received submission {}",submission.getId());
@@ -48,7 +48,10 @@ public class ArrayExpressSubmissionProcessor {
 
         logger.info("processed submission {}",submission.getId());
 
-        rabbitMessagingTemplate.convertAndSend(Channels.SUBMISSION_PROCESSED, submission);
+        //TODO debug stuff
+        submission.setLastHandler(this.getClass().toString());
+
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, submission);
 
         logger.info("sent submission {}",submission.getId());
 
