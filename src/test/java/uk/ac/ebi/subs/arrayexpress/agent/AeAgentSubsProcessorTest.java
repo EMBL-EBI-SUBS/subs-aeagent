@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ArrayExpressAgentApplication;
+import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.submittable.*;
 
@@ -19,6 +21,7 @@ import static org.junit.Assert.assertThat;
 @SpringBootTest(classes = ArrayExpressAgentApplication.class)
 public class AeAgentSubsProcessorTest {
 
+    SubmissionEnvelope subEnv;
     Submission sub;
     Sample sa;
     Study st;
@@ -32,7 +35,7 @@ public class AeAgentSubsProcessorTest {
 
     @Test
     public void test(){
-        processor.processSubmission(sub);
+        processor.processSubmission(subEnv);
 
         String processedStatus = "processed";
 
@@ -90,5 +93,7 @@ public class AeAgentSubsProcessorTest {
         sub.getStudies().add(st);
         sub.getAssays().add(as);
         sub.getAssayData().add(ad);
+
+        subEnv = new SubmissionEnvelope(sub);
     }
 }

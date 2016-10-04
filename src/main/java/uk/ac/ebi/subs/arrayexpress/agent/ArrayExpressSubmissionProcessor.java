@@ -9,6 +9,8 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.arrayexpress.model.ArrayExpressStudy;
 import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
+import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.submittable.*;
 import uk.ac.ebi.subs.messaging.Exchanges;
@@ -40,25 +42,26 @@ public class ArrayExpressSubmissionProcessor {
     }
 
     @RabbitListener(queues = {Queues.AE_AGENT})
-    public void handleSubmission(Submission submission) {
+    public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
 
-        logger.info("received submission {}",submission.getId());
+        logger.info("received submission {}",submissionEnvelope.getSubmission().getId());
 
-        processSubmission(submission);
+        processSubmission(submissionEnvelope);
 
-        logger.info("processed submission {}",submission.getId());
+        submissionEnvelope.addHandler(Archive.ArrayExpress);
+        logger.info("processed submission {}",submissionEnvelope.getSubmission().getId());
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, submission);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, submissionEnvelope);
 
-        logger.info("sent submission {}",submission.getId());
+        logger.info("sent submission {}", submissionEnvelope.getSubmission().getId());
 
     }
 
-    public void processSubmission(Submission submission) {
+    public void processSubmission(SubmissionEnvelope submissionEnvelope) {
 
-        submission.getStudies().stream()
+        submissionEnvelope.getSubmission().getStudies().stream()
                 .filter(s -> s.getArchive() == Archive.ArrayExpress)
-                .forEach(s -> processStudy(s, submission));
+                .forEach(s -> processStudy(s, submissionEnvelope.getSubmission()));
     }
 
     public void processStudy(Study study, Submission submission) {
