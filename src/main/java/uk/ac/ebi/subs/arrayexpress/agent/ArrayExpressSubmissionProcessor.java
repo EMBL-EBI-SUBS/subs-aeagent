@@ -44,11 +44,13 @@ public class ArrayExpressSubmissionProcessor {
     @RabbitListener(queues = {Queues.AE_AGENT})
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
 
-        logger.info("received submission {}",submissionEnvelope.getSubmission().getId());
+        logger.info("received submission {}, most recent handler was ",
+                submissionEnvelope.getSubmission().getId(),
+                submissionEnvelope.mostRecentHandler());
 
         processSubmission(submissionEnvelope);
 
-        submissionEnvelope.addHandler(Archive.ArrayExpress);
+        submissionEnvelope.addHandler(this.getClass());
         logger.info("processed submission {}",submissionEnvelope.getSubmission().getId());
 
         rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, submissionEnvelope);
