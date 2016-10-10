@@ -63,10 +63,11 @@ public class ArrayExpressSubmissionProcessor {
 
         submissionEnvelope.getSubmission().getStudies().stream()
                 .filter(s -> s.getArchive() == Archive.ArrayExpress)
-                .forEach(s -> processStudy(s, submissionEnvelope.getSubmission()));
+                .forEach(s -> processStudy(s, submissionEnvelope));
     }
 
-    public void processStudy(Study study, Submission submission) {
+    public void processStudy(Study study, SubmissionEnvelope submissionEnvelope) {
+        Submission submission = submissionEnvelope.getSubmission();
 
         if (!study.isAccessioned()) {
             study.setAccession("AE-MTAB-" + UUID.randomUUID());
@@ -78,7 +79,7 @@ public class ArrayExpressSubmissionProcessor {
 
         submission.getAssays().stream()
                 .filter(a -> a.getArchive() == Archive.ArrayExpress && a.getStudyRef().isMatch(study))
-                .forEach(a -> processAssay(a,submission,arrayExpressStudy));
+                .forEach(a -> processAssay(a,submissionEnvelope,arrayExpressStudy));
 
 
         aeStudyRepository.save(arrayExpressStudy);
@@ -95,12 +96,18 @@ public class ArrayExpressSubmissionProcessor {
         }
     }
 
-    public void processAssay(Assay assay, Submission submission,ArrayExpressStudy arrayExpressStudy){
+    public void processAssay(Assay assay, SubmissionEnvelope submissionEnvelope,ArrayExpressStudy arrayExpressStudy){
+        Submission submission = submissionEnvelope.getSubmission();
+
         SampleDataRelationship sdr = new SampleDataRelationship();
         sdr.setAssay(assay);
 
         //find sample
         assay.getSampleRef().fillIn(submission.getSamples());
+
+        if (assay.getSampleRef().getReferencedObject() == null){
+            assay.getSampleRef().fillIn(submissionEnvelope.getSupportingSamples());
+        }
 
         if (assay.getSampleRef().getReferencedObject() == null){
             throw new RuntimeException("No sample found for "+assay.getSampleRef());
