@@ -45,7 +45,7 @@ public class ArrayExpressSubmissionProcessor {
     @RabbitListener(queues = {Queues.AE_AGENT})
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
 
-        logger.info("received submission {}, most recent handler was ",
+        logger.info("received submission {}, most recent handler was {}",
                 submissionEnvelope.getSubmission().getId(),
                 submissionEnvelope.mostRecentHandler());
 
