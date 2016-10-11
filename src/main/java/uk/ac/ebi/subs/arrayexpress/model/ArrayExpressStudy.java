@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.arrayexpress.model;
 
 
 import org.springframework.data.annotation.Id;
+import uk.ac.ebi.subs.data.component.Protocol;
 import uk.ac.ebi.subs.data.submittable.Study;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class ArrayExpressStudy {
     Study study;
 
     List<SampleDataRelationship> sampleDataRelationships = new ArrayList<>();
+    List<Protocol> protocols = new ArrayList<>();
 
     public String getAccession() {
         return accession;
@@ -36,5 +38,13 @@ public class ArrayExpressStudy {
 
     public void setSampleDataRelationships(List<SampleDataRelationship> sampleDataRelationships) {
         this.sampleDataRelationships = sampleDataRelationships;
+    }
+
+    public List<Protocol> getProtocols() {
+        return protocols;
+    }
+
+    public void setProtocols(List<Protocol> protocols) {
+        this.protocols = protocols;
     }
 }
