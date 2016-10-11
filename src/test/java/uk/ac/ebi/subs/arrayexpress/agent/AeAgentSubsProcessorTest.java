@@ -72,7 +72,8 @@ public class AeAgentSubsProcessorTest {
         as = new Assay();
         as.setArchive(Archive.ArrayExpress);
         as.setAlias("exp1");
-        as.setSampleRef((SampleRef) sa.asRef());
+
+        as.getSampleUses().add(new SampleUse((SampleRef) sa.asRef()));
         as.setStudyRef((StudyRef)st.asRef());
         as.setDomain(domain);
 

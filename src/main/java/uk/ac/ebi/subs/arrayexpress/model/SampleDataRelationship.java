@@ -1,6 +1,7 @@
 package uk.ac.ebi.subs.arrayexpress.model;
 
 
+import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 import uk.ac.ebi.subs.data.submittable.Sample;
@@ -10,7 +11,7 @@ import java.util.List;
 public class SampleDataRelationship {
 
     Assay assay;
-    Sample sample;
+    List<SampleUse> sampleUses;
     List<AssayData> assayData;
 
     public Assay getAssay() {
@@ -21,12 +22,12 @@ public class SampleDataRelationship {
         this.assay = assay;
     }
 
-    public Sample getSample() {
-        return sample;
+    public List<SampleUse> getSampleUses() {
+        return sampleUses;
     }
 
-    public void setSample(Sample sample) {
-        this.sample = sample;
+    public void setSampleUses(List<SampleUse> sampleUses) {
+        this.sampleUses = sampleUses;
     }
 
     public List<AssayData> getAssayData() {

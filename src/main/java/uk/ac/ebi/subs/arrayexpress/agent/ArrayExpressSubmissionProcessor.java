@@ -12,6 +12,7 @@ import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
+import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.*;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
@@ -103,17 +104,17 @@ public class ArrayExpressSubmissionProcessor {
         sdr.setAssay(assay);
 
         //find sample
-        assay.getSampleRef().fillIn(submission.getSamples());
+        for (SampleUse su : assay.getSampleUses()){
+            su.getSampleRef().fillIn(submission.getSamples(),submissionEnvelope.getSupportingSamples());
 
-        if (assay.getSampleRef().getReferencedObject() == null){
-            assay.getSampleRef().fillIn(submissionEnvelope.getSupportingSamples());
+            if (su.getSampleRef().getReferencedObject() == null){
+                throw new RuntimeException("No sample found for "+su.getSampleRef());
+            }
         }
+        //TODO change sdr to take a list?
 
-        if (assay.getSampleRef().getReferencedObject() == null){
-            throw new RuntimeException("No sample found for "+assay.getSampleRef());
-        }
 
-        sdr.setSample(assay.getSampleRef().getReferencedObject());
+        sdr.setSampleUses(assay.getSampleUses());
 
         //find assay data
         List<AssayData> assayData = submission.getAssayData().stream()
