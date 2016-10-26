@@ -1,18 +1,28 @@
 package uk.ac.ebi.subs.arrayexpress.model;
 
 
+import org.springframework.data.annotation.Id;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
-import uk.ac.ebi.subs.data.submittable.Sample;
 
 import java.util.List;
 
 public class SampleDataRelationship {
+    @Id
+    String id;
 
     Assay assay;
     List<SampleUse> sampleUses;
     List<AssayData> assayData;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public Assay getAssay() {
         return assay;

@@ -2,6 +2,7 @@ package uk.ac.ebi.subs.arrayexpress.model;
 
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import uk.ac.ebi.subs.data.submittable.Protocol;
 import uk.ac.ebi.subs.data.submittable.Study;
 
@@ -9,11 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArrayExpressStudy {
-    @Id String accession;
+    @Id
+    String accession;
 
     Study study;
 
+    @DBRef
     List<SampleDataRelationship> sampleDataRelationships = new ArrayList<>();
+    @DBRef
     List<Protocol> protocols = new ArrayList<>();
 
     public String getAccession() {
