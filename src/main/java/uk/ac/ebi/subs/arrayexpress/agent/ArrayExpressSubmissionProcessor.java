@@ -18,7 +18,11 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
+import uk.ac.ebi.subs.processing.AgentResults;
+import uk.ac.ebi.subs.processing.Certificate;
+import uk.ac.ebi.subs.processing.ProcessingStatus;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,25 +53,32 @@ public class ArrayExpressSubmissionProcessor {
                 submissionEnvelope.getSubmission().getId(),
                 submissionEnvelope.mostRecentHandler());
 
-        processSubmission(submissionEnvelope);
+        List<Certificate> certs = processSubmission(submissionEnvelope);
 
         submissionEnvelope.addHandler(this.getClass());
         logger.info("processed submission {}",submissionEnvelope.getSubmission().getId());
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, submissionEnvelope);
+        AgentResults agentResults = new AgentResults(submissionEnvelope.getSubmission().getId(),certs);
+
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, agentResults);
 
         logger.info("sent submission {}", submissionEnvelope.getSubmission().getId());
 
     }
 
-    public void processSubmission(SubmissionEnvelope submissionEnvelope) {
+    public List<Certificate> processSubmission(SubmissionEnvelope submissionEnvelope) {
+
+        List<Certificate> certs = new ArrayList<>();
 
         submissionEnvelope.getSubmission().getStudies().stream()
                 .filter(s -> s.getArchive() == Archive.ArrayExpress)
-                .forEach(s -> processStudy(s, submissionEnvelope));
+                .forEach(s -> certs.addAll(processStudy(s, submissionEnvelope)));
+
+        return certs;
     }
 
-    public void processStudy(Study study, SubmissionEnvelope submissionEnvelope) {
+    public List<Certificate> processStudy(Study study, SubmissionEnvelope submissionEnvelope) {
+        List<Certificate> certs = new ArrayList<>();
         Submission submission = submissionEnvelope.getSubmission();
 
         if (!study.isAccessioned()) {
@@ -78,9 +89,12 @@ public class ArrayExpressSubmissionProcessor {
         arrayExpressStudy.setAccession(study.getAccession());
         arrayExpressStudy.setStudy(study);
 
+        certs.add(new Certificate(study,Archive.ArrayExpress, ProcessingStatus.Curation,arrayExpressStudy.getAccession()));
+
+
         submission.getAssays().stream()
                 .filter(a -> a.getArchive() == Archive.ArrayExpress && a.getStudyRef().isMatch(study))
-                .forEach(a -> processAssay(a,submissionEnvelope,arrayExpressStudy));
+                .forEach(a -> certs.addAll(processAssay(a,submissionEnvelope,arrayExpressStudy)));
 
 
         aeStudyRepository.save(arrayExpressStudy);
@@ -95,13 +109,19 @@ public class ArrayExpressSubmissionProcessor {
                 ad.setStatus(processedStatusValue);
             }
         }
+
+        return certs;
     }
 
-    public void processAssay(Assay assay, SubmissionEnvelope submissionEnvelope,ArrayExpressStudy arrayExpressStudy){
+    public List<Certificate> processAssay(Assay assay, SubmissionEnvelope submissionEnvelope,ArrayExpressStudy arrayExpressStudy){
+        List<Certificate> certs = new ArrayList<>();
+
         Submission submission = submissionEnvelope.getSubmission();
 
         SampleDataRelationship sdr = new SampleDataRelationship();
         sdr.setAssay(assay);
+
+        certs.add(new Certificate(assay,Archive.ArrayExpress,ProcessingStatus.Curation));
 
         //find sample
         for (SampleUse su : assay.getSampleUses()){
@@ -121,9 +141,15 @@ public class ArrayExpressSubmissionProcessor {
                 .filter(ad -> ad.getArchive() == Archive.ArrayExpress && ad.getAssayRef().isMatch(assay))
                 .collect(Collectors.toList());
 
+        assayData.forEach(ad ->
+            certs.add(new Certificate(ad,Archive.ArrayExpress,ProcessingStatus.Curation))
+        );
+
         sdr.setAssayData(assayData);
 
         arrayExpressStudy.getSampleDataRelationships().add(sdr);
+
+        return certs;
     }
 
 }
