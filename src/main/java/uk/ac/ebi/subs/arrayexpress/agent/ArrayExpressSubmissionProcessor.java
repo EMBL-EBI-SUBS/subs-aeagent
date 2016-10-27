@@ -1,5 +1,6 @@
 package uk.ac.ebi.subs.arrayexpress.agent;
 
+import org.bson.BsonSerializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -8,21 +9,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.arrayexpress.model.ArrayExpressStudy;
+import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
+import uk.ac.ebi.subs.arrayexpress.repo.SampleDataRelatioshipRepository;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.data.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleUse;
-import uk.ac.ebi.subs.data.submittable.*;
+import uk.ac.ebi.subs.data.submittable.Assay;
+import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
-import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 import uk.ac.ebi.subs.processing.AgentResults;
 import uk.ac.ebi.subs.processing.Certificate;
 import uk.ac.ebi.subs.processing.ProcessingStatus;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,13 +35,14 @@ import java.util.stream.Collectors;
 
 @Component
 public class ArrayExpressSubmissionProcessor {
-
     private static final Logger logger = LoggerFactory.getLogger(ArrayExpressSubmissionProcessor.class);
 
     String processedStatusValue = "processed";
 
     @Autowired
     ArrayExpressStudyRepository aeStudyRepository;
+    @Autowired
+    SampleDataRelatioshipRepository sampleDataRelatioshipRepository;
 
     RabbitMessagingTemplate rabbitMessagingTemplate;
 
@@ -60,7 +66,7 @@ public class ArrayExpressSubmissionProcessor {
 
         AgentResults agentResults = new AgentResults(submissionEnvelope.getSubmission().getId(),certs);
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_PROCESSED, agentResults);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_AGENT_RESULTS, agentResults);
 
         logger.info("sent submission {}", submissionEnvelope.getSubmission().getId());
 
@@ -96,9 +102,13 @@ public class ArrayExpressSubmissionProcessor {
                 .filter(a -> a.getArchive() == Archive.ArrayExpress && a.getStudyRef().isMatch(study))
                 .forEach(a -> certs.addAll(processAssay(a,submissionEnvelope,arrayExpressStudy)));
 
-
-        aeStudyRepository.save(arrayExpressStudy);
-
+        try {
+            aeStudyRepository.save(arrayExpressStudy);
+            sampleDataRelatioshipRepository.save(arrayExpressStudy.getSampleDataRelationships());
+        } catch (BsonSerializationException e) {
+            logger.error("ArrayExpressStudy {" + arrayExpressStudy.getAccession() + "} bson document exceeds size limit:", e);
+            return Collections.emptyList();
+        }
 
         study.setStatus(processedStatusValue);
         for (SampleDataRelationship sdr : arrayExpressStudy.getSampleDataRelationships()){
@@ -119,6 +129,7 @@ public class ArrayExpressSubmissionProcessor {
         Submission submission = submissionEnvelope.getSubmission();
 
         SampleDataRelationship sdr = new SampleDataRelationship();
+        sdr.setId(UUID.randomUUID().toString());
         sdr.setAssay(assay);
 
         certs.add(new Certificate(assay,Archive.ArrayExpress,ProcessingStatus.Curation));
