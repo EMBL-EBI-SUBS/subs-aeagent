@@ -53,8 +53,7 @@ public class AeAgentSubsProcessorTest {
         assertThat("ena study untouched", enaStudy.getAccession(),nullValue());
         assertThat("ena study status is null", enaStudy.getStatus(),nullValue());
 
-        //assertThat("correct number of certs",certs,hasSize(3));
-        assertThat("correct certs",
+       assertThat("correct certs",
                 certs,
                 containsInAnyOrder(
                         new Certificate(st,Archive.ArrayExpress, ProcessingStatus.Curation, st.getAccession()),
