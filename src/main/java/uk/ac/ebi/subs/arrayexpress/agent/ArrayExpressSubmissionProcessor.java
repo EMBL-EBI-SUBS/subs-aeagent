@@ -54,14 +54,11 @@ public class ArrayExpressSubmissionProcessor {
 
     @RabbitListener(queues = {Queues.AE_AGENT})
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
-
-        logger.info("received submission {}, most recent handler was {}",
-                submissionEnvelope.getSubmission().getId(),
-                submissionEnvelope.mostRecentHandler());
+        logger.info("received submission {}",
+                submissionEnvelope.getSubmission().getId());
 
         List<Certificate> certs = processSubmission(submissionEnvelope);
 
-        submissionEnvelope.addHandler(this.getClass());
         logger.info("processed submission {}",submissionEnvelope.getSubmission().getId());
 
         AgentResults agentResults = new AgentResults(submissionEnvelope.getSubmission().getId(),certs);
