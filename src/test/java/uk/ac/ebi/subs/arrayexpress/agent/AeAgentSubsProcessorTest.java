@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ArrayExpressAgentApplication;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.submittable.*;
 import uk.ac.ebi.subs.processing.Certificate;

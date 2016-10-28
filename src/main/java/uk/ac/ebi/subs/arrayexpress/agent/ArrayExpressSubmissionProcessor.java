@@ -13,7 +13,7 @@ import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
 import uk.ac.ebi.subs.arrayexpress.repo.SampleDataRelatioshipRepository;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
