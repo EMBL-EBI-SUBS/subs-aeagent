@@ -73,7 +73,7 @@ public class AeAgentSubsProcessorTest {
         sa = new Sample();
         sa.setAlias("bob");
         sa.setAccession("S1");
-        sa.setArchive(Archive.Usi);
+        sa.setArchive(Archive.BioSamples);
         sa.setDomain(domain);
 
         st = new Study();
