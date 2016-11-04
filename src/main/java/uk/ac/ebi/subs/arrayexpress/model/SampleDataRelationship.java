@@ -2,12 +2,17 @@ package uk.ac.ebi.subs.arrayexpress.model;
 
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
 
 import java.util.List;
 
+@CompoundIndexes({
+        @CompoundIndex(name = "sample_use_ref_accession", def = "{ 'sampleUses.sampleRef.accession': 1}"),
+})
 public class SampleDataRelationship {
     @Id
     String id;
