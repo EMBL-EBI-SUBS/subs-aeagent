@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.arrayexpress.model.ArrayExpressStudy;
@@ -13,7 +16,8 @@ import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
 import uk.ac.ebi.subs.arrayexpress.repo.SampleDataRelatioshipRepository;
 import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.processing.SubmissionEnvelope;
+import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.processing.*;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
@@ -22,9 +26,6 @@ import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
-import uk.ac.ebi.subs.processing.AgentResults;
-import uk.ac.ebi.subs.processing.Certificate;
-import uk.ac.ebi.subs.processing.ProcessingStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -52,7 +53,46 @@ public class ArrayExpressSubmissionProcessor {
         this.rabbitMessagingTemplate.setMessageConverter(messageConverter);
     }
 
-    @RabbitListener(queues = {Queues.AE_AGENT})
+    @RabbitListener(queues = Queues.AE_SAMPLES_UPDATED)
+    public void handleSampleUpdate(UpdatedSamplesEnvelope updatedSamplesEnvelope){
+        logger.info("received updated samples for submission {}",updatedSamplesEnvelope.getSubmissionId());
+
+        updatedSamplesEnvelope.getUpdatedSamples().forEach( s ->{
+            if (s.getAccession() == null) return;
+
+
+            Page<SampleDataRelationship> page;
+            int pageNumber = 0;
+            int pageLimit = 500;
+
+
+
+            do{
+
+                page = sampleDataRelatioshipRepository.findBySampleAccession(s.getAccession(), new PageRequest(pageNumber,pageLimit));
+                logger.debug("Submission {} Sample {} page {}/{} {}",updatedSamplesEnvelope.getSubmissionId(),s.getAccession(),pageNumber,page.getTotalPages(),page.getTotalElements());
+
+                pageNumber++;
+
+                for (SampleDataRelationship sdr : page){
+                    for(SampleUse sampleUse : sdr.getSampleUses()){
+                        if (sampleUse.getSampleRef().getAccession().equals(s.getAccession())){
+                            sampleUse.getSampleRef().setReferencedObject(s);
+                        }
+                    }
+
+                    sampleDataRelatioshipRepository.save(sdr);
+                }
+
+            }while (!page.isLast());
+
+            logger.debug("updates sample {} using submission {}",s.getAccession(),updatedSamplesEnvelope.getSubmissionId());
+        });
+
+        logger.info("finished updating samples for submission {}", updatedSamplesEnvelope.getSubmissionId());
+    }
+
+    @RabbitListener(queues = Queues.AE_AGENT)
     public void handleSubmission(SubmissionEnvelope submissionEnvelope) {
         logger.info("received submission {}",
                 submissionEnvelope.getSubmission().getId());
