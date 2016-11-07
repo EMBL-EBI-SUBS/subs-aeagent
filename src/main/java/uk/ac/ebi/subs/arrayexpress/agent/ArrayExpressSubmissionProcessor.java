@@ -27,10 +27,7 @@ import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -57,37 +54,33 @@ public class ArrayExpressSubmissionProcessor {
     public void handleSampleUpdate(UpdatedSamplesEnvelope updatedSamplesEnvelope){
         logger.info("received updated samples for submission {}",updatedSamplesEnvelope.getSubmissionId());
 
-        updatedSamplesEnvelope.getUpdatedSamples().forEach( s ->{
-            if (s.getAccession() == null) return;
+        Map<String,Sample> samplesByAccession = new HashMap<>();
 
 
-            Page<SampleDataRelationship> page;
-            int pageNumber = 0;
-            int pageLimit = 500;
+        updatedSamplesEnvelope.getUpdatedSamples().forEach(s -> samplesByAccession.put(s.getAccession(),s));
 
+        String[] updatedSampleAccessions = new String[0];
+        updatedSampleAccessions = (String[])samplesByAccession.keySet().toArray(updatedSampleAccessions);
 
+        List<SampleDataRelationship> sdrs = sampleDataRelatioshipRepository.findBySampleAccessions(updatedSampleAccessions);
 
-            do{
+        logger.debug("found {} sdrs for sample update for submission {}",sdrs.size(),updatedSamplesEnvelope.getSubmissionId());
 
-                page = sampleDataRelatioshipRepository.findBySampleAccession(s.getAccession(), new PageRequest(pageNumber,pageLimit));
-                logger.debug("Submission {} Sample {} page {}/{} {}",updatedSamplesEnvelope.getSubmissionId(),s.getAccession(),pageNumber,page.getTotalPages(),page.getTotalElements());
+        for(SampleDataRelationship sdr : sdrs){
+            for (SampleUse sampleUse : sdr.getSampleUses()){
+                if (sampleUse.getSampleRef() == null || sampleUse.getSampleRef().getAccession() == null) continue;
 
-                pageNumber++;
+                String sampleAccession = sampleUse.getSampleRef().getAccession();
 
-                for (SampleDataRelationship sdr : page){
-                    for(SampleUse sampleUse : sdr.getSampleUses()){
-                        if (sampleUse.getSampleRef().getAccession().equals(s.getAccession())){
-                            sampleUse.getSampleRef().setReferencedObject(s);
-                        }
-                    }
-
-                    sampleDataRelatioshipRepository.save(sdr);
+                if (samplesByAccession.containsKey(sampleAccession)){
+                    sampleUse.getSampleRef().setReferencedObject(samplesByAccession.get(sampleAccession));
+                    logger.debug("update sample {} in sdr {} ",sampleAccession,sdr.getId());
                 }
+            }
+        }
 
-            }while (!page.isLast());
+        sampleDataRelatioshipRepository.save(sdrs);
 
-            logger.debug("updates sample {} using submission {}",s.getAccession(),updatedSamplesEnvelope.getSubmissionId());
-        });
 
         logger.info("finished updating samples for submission {}", updatedSamplesEnvelope.getSubmissionId());
     }
