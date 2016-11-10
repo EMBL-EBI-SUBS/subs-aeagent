@@ -6,9 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.stereotype.Component;
 import uk.ac.ebi.subs.arrayexpress.model.ArrayExpressStudy;
@@ -90,21 +87,21 @@ public class ArrayExpressSubmissionProcessor {
         logger.info("received submission {}",
                 submissionEnvelope.getSubmission().getId());
 
-        List<Certificate> certs = processSubmission(submissionEnvelope);
+        List<ProcessingCertificate> certs = processSubmission(submissionEnvelope);
 
         logger.info("processed submission {}",submissionEnvelope.getSubmission().getId());
 
-        AgentResults agentResults = new AgentResults(submissionEnvelope.getSubmission().getId(),certs);
+        ProcessingCertificateEnvelope processingCertificateEnvelope = new ProcessingCertificateEnvelope(submissionEnvelope.getSubmission().getId(),certs);
 
-        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_AGENT_RESULTS, agentResults);
+        rabbitMessagingTemplate.convertAndSend(Exchanges.SUBMISSIONS,Topics.EVENT_SUBMISSION_AGENT_RESULTS, processingCertificateEnvelope);
 
         logger.info("sent submission {}", submissionEnvelope.getSubmission().getId());
 
     }
 
-    public List<Certificate> processSubmission(SubmissionEnvelope submissionEnvelope) {
+    public List<ProcessingCertificate> processSubmission(SubmissionEnvelope submissionEnvelope) {
 
-        List<Certificate> certs = new ArrayList<>();
+        List<ProcessingCertificate> certs = new ArrayList<>();
 
         submissionEnvelope.getSubmission().getStudies().stream()
                 .filter(s -> s.getArchive() == Archive.ArrayExpress)
@@ -113,8 +110,8 @@ public class ArrayExpressSubmissionProcessor {
         return certs;
     }
 
-    public List<Certificate> processStudy(Study study, SubmissionEnvelope submissionEnvelope) {
-        List<Certificate> certs = new ArrayList<>();
+    public List<ProcessingCertificate> processStudy(Study study, SubmissionEnvelope submissionEnvelope) {
+        List<ProcessingCertificate> certs = new ArrayList<>();
         Submission submission = submissionEnvelope.getSubmission();
 
         if (!study.isAccessioned()) {
@@ -125,7 +122,7 @@ public class ArrayExpressSubmissionProcessor {
         arrayExpressStudy.setAccession(study.getAccession());
         arrayExpressStudy.setStudy(study);
 
-        certs.add(new Certificate(study,Archive.ArrayExpress, ProcessingStatus.Curation,arrayExpressStudy.getAccession()));
+        certs.add(new ProcessingCertificate(study,Archive.ArrayExpress, ProcessingStatus.Curation,arrayExpressStudy.getAccession()));
 
 
         submission.getAssays().stream()
@@ -153,8 +150,8 @@ public class ArrayExpressSubmissionProcessor {
         return certs;
     }
 
-    public List<Certificate> processAssay(Assay assay, SubmissionEnvelope submissionEnvelope,ArrayExpressStudy arrayExpressStudy){
-        List<Certificate> certs = new ArrayList<>();
+    public List<ProcessingCertificate> processAssay(Assay assay, SubmissionEnvelope submissionEnvelope, ArrayExpressStudy arrayExpressStudy){
+        List<ProcessingCertificate> certs = new ArrayList<>();
 
         Submission submission = submissionEnvelope.getSubmission();
 
@@ -162,7 +159,7 @@ public class ArrayExpressSubmissionProcessor {
         sdr.setId(UUID.randomUUID().toString());
         sdr.setAssay(assay);
 
-        certs.add(new Certificate(assay,Archive.ArrayExpress,ProcessingStatus.Curation));
+        certs.add(new ProcessingCertificate(assay,Archive.ArrayExpress,ProcessingStatus.Curation));
 
         //find sample
         for (SampleUse su : assay.getSampleUses()){
@@ -183,7 +180,7 @@ public class ArrayExpressSubmissionProcessor {
                 .collect(Collectors.toList());
 
         assayData.forEach(ad ->
-            certs.add(new Certificate(ad,Archive.ArrayExpress,ProcessingStatus.Curation))
+            certs.add(new ProcessingCertificate(ad,Archive.ArrayExpress,ProcessingStatus.Curation))
         );
 
         sdr.setAssayData(assayData);

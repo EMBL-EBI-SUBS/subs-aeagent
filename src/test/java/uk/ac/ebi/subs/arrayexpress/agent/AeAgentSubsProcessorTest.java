@@ -8,10 +8,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ArrayExpressAgentApplication;
 import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.submittable.*;
-import uk.ac.ebi.subs.processing.Certificate;
 import uk.ac.ebi.subs.processing.ProcessingStatus;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public class AeAgentSubsProcessorTest {
 
     @Test
     public void test(){
-        List<Certificate> certs = processor.processSubmission(subEnv);
+        List<ProcessingCertificate> certs = processor.processSubmission(subEnv);
 
         String processedStatus = "processed";
 
@@ -56,9 +56,9 @@ public class AeAgentSubsProcessorTest {
        assertThat("correct certs",
                 certs,
                 containsInAnyOrder(
-                        new Certificate(st,Archive.ArrayExpress, ProcessingStatus.Curation, st.getAccession()),
-                        new Certificate(as,Archive.ArrayExpress, ProcessingStatus.Curation),
-                        new Certificate(ad,Archive.ArrayExpress, ProcessingStatus.Curation)
+                        new ProcessingCertificate(st,Archive.ArrayExpress, ProcessingStatus.Curation, st.getAccession()),
+                        new ProcessingCertificate(as,Archive.ArrayExpress, ProcessingStatus.Curation),
+                        new ProcessingCertificate(ad,Archive.ArrayExpress, ProcessingStatus.Curation)
                 )
 
                 );
