@@ -8,6 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ArrayExpressAgentApplication;
 
+import uk.ac.ebi.subs.data.FullSubmission;
 import uk.ac.ebi.subs.data.Submission;
 import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
@@ -25,7 +26,7 @@ import static org.junit.Assert.assertThat;
 public class AeAgentSubsProcessorTest {
 
     SubmissionEnvelope subEnv;
-    Submission sub;
+    FullSubmission sub;
     Sample sa;
     Study st;
     Assay as;
@@ -101,7 +102,7 @@ public class AeAgentSubsProcessorTest {
         enaStudy.setAlias("not to be accessioned here");
         enaStudy.setDomain(domain);
 
-        sub = new Submission();
+        sub = new FullSubmission();
         sub.setDomain(domain);
         sub.getSamples().add(sa);
         sub.getStudies().add(st);
