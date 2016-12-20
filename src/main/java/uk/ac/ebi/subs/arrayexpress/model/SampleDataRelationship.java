@@ -7,7 +7,9 @@ import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import uk.ac.ebi.subs.data.component.SampleUse;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.data.submittable.Sample;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @CompoundIndexes({
@@ -18,8 +20,9 @@ public class SampleDataRelationship {
     String id;
 
     Assay assay;
-    List<SampleUse> sampleUses;
-    List<AssayData> assayData;
+    List<SampleUse> sampleUses = new ArrayList<>();
+    List<AssayData> assayData = new ArrayList<>();
+    List<Sample> samples = new ArrayList<>();
 
     public String getId() {
         return id;
@@ -51,5 +54,13 @@ public class SampleDataRelationship {
 
     public void setAssayData(List<AssayData> assayData) {
         this.assayData = assayData;
+    }
+
+    public List<Sample> getSamples() {
+        return samples;
+    }
+
+    public void setSamples(List<Sample> samples) {
+        this.samples = samples;
     }
 }
