@@ -14,7 +14,7 @@ import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
 import uk.ac.ebi.subs.data.component.*;
 import uk.ac.ebi.subs.data.submittable.*;
-import uk.ac.ebi.subs.processing.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatus;
 
 import java.util.List;
 
