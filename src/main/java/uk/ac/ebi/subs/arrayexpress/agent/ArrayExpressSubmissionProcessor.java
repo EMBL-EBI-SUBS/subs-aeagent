@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 public class ArrayExpressSubmissionProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ArrayExpressSubmissionProcessor.class);
 
-    String processedStatusValue = "processed";
+    ProcessingStatus processedStatusValue = ProcessingStatus.Done;
 
     @Autowired
     ArrayExpressStudyRepository aeStudyRepository;

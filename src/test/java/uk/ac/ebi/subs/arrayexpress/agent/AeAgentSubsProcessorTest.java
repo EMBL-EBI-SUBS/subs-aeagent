@@ -41,7 +41,7 @@ public class AeAgentSubsProcessorTest {
     public void test(){
         List<ProcessingCertificate> certs = processor.processSubmission(subEnv);
 
-        String processedStatus = "processed";
+        String processedStatus = ProcessingStatus.Done.name();
 
         assertThat("study accessioned", st.getAccession(), startsWith("AE-MTAB-"));
         assertThat("study status", st.getStatus(),equalTo(processedStatus));
