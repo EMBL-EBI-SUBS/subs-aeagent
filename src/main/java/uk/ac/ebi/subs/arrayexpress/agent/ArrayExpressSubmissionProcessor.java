@@ -14,8 +14,7 @@ import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
 import uk.ac.ebi.subs.arrayexpress.repo.SampleDataRelatioshipRepository;
 
 import uk.ac.ebi.subs.data.FullSubmission;
-import uk.ac.ebi.subs.data.Submission;
-import uk.ac.ebi.subs.data.status.ProcessingStatus;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.processing.*;
 import uk.ac.ebi.subs.data.component.Archive;
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
 public class ArrayExpressSubmissionProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ArrayExpressSubmissionProcessor.class);
 
-    ProcessingStatus processedStatusValue = ProcessingStatus.Done;
+    ProcessingStatusEnum processedStatusValue = ProcessingStatusEnum.Done;
 
     @Autowired
     ArrayExpressStudyRepository aeStudyRepository;
@@ -125,7 +124,7 @@ public class ArrayExpressSubmissionProcessor {
         arrayExpressStudy.setAccession(study.getAccession());
         arrayExpressStudy.setStudy(study);
 
-        certs.add(new ProcessingCertificate(study,Archive.ArrayExpress, ProcessingStatus.Curation,arrayExpressStudy.getAccession()));
+        certs.add(new ProcessingCertificate(study,Archive.ArrayExpress, ProcessingStatusEnum.Curation,arrayExpressStudy.getAccession()));
 
 
         submission.getAssays().stream()
@@ -162,7 +161,7 @@ public class ArrayExpressSubmissionProcessor {
         sdr.setId(UUID.randomUUID().toString());
         sdr.setAssay(assay);
 
-        certs.add(new ProcessingCertificate(assay,Archive.ArrayExpress,ProcessingStatus.Curation));
+        certs.add(new ProcessingCertificate(assay,Archive.ArrayExpress, ProcessingStatusEnum.Curation));
 
         //find sample
         for (SampleUse su : assay.getSampleUses()){
@@ -184,7 +183,7 @@ public class ArrayExpressSubmissionProcessor {
                 .collect(Collectors.toList());
 
         assayData.forEach(ad ->
-            certs.add(new ProcessingCertificate(ad,Archive.ArrayExpress,ProcessingStatus.Curation))
+            certs.add(new ProcessingCertificate(ad,Archive.ArrayExpress, ProcessingStatusEnum.Curation))
         );
 
         sdr.setAssayData(assayData);
