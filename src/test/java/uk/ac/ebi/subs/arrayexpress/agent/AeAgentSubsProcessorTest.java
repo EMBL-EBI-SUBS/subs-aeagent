@@ -43,16 +43,16 @@ public class AeAgentSubsProcessorTest {
         String processedStatus = ProcessingStatusEnum.Done.name();
 
         assertThat("study accessioned", st.getAccession(), startsWith("AE-MTAB-"));
-        assertThat("study status", st.getStatus(),equalTo(processedStatus));
+
 
         assertThat("assay accessioned", as.getAccession(), nullValue());
-        assertThat("assay status", as.getStatus(),equalTo(processedStatus));
+
 
         assertThat("assay data accessioned", ad.getAccession(), nullValue());
-        assertThat("assay data status", ad.getStatus(),equalTo(processedStatus));
+
 
         assertThat("ena study untouched", enaStudy.getAccession(),nullValue());
-        assertThat("ena study status is null", enaStudy.getStatus(),nullValue());
+
 
        assertThat("correct certs",
                 certs,

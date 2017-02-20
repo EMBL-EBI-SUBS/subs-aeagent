@@ -124,7 +124,8 @@ public class ArrayExpressSubmissionProcessor {
         arrayExpressStudy.setAccession(study.getAccession());
         arrayExpressStudy.setStudy(study);
 
-        certs.add(new ProcessingCertificate(study,Archive.ArrayExpress, ProcessingStatusEnum.Curation,arrayExpressStudy.getAccession()));
+        certs.add(
+                new ProcessingCertificate(study,Archive.ArrayExpress, ProcessingStatusEnum.Curation,arrayExpressStudy.getAccession()));
 
 
         submission.getAssays().stream()
@@ -137,16 +138,6 @@ public class ArrayExpressSubmissionProcessor {
         } catch (BsonSerializationException e) {
             logger.error("ArrayExpressStudy {" + arrayExpressStudy.getAccession() + "} bson document exceeds size limit:", e);
             return Collections.emptyList();
-        }
-
-        study.setStatus(processedStatusValue);
-        for (SampleDataRelationship sdr : arrayExpressStudy.getSampleDataRelationships()){
-
-            sdr.getAssay().setStatus(processedStatusValue);
-
-            for (AssayData ad : sdr.getAssayData()){
-                ad.setStatus(processedStatusValue);
-            }
         }
 
         return certs;
