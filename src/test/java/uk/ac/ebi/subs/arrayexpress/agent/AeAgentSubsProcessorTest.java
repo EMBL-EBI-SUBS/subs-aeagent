@@ -40,7 +40,7 @@ public class AeAgentSubsProcessorTest {
     public void test(){
         List<ProcessingCertificate> certs = processor.processSubmission(subEnv);
 
-        String processedStatus = ProcessingStatusEnum.Done.name();
+        String processedStatus = ProcessingStatusEnum.Completed.name();
 
         assertThat("study accessioned", st.getAccession(), startsWith("AE-MTAB-"));
 

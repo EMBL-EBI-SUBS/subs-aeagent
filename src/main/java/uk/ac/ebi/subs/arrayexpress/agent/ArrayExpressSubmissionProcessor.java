@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class ArrayExpressSubmissionProcessor {
     private static final Logger logger = LoggerFactory.getLogger(ArrayExpressSubmissionProcessor.class);
 
-    ProcessingStatusEnum processedStatusValue = ProcessingStatusEnum.Done;
+    ProcessingStatusEnum processedStatusValue = ProcessingStatusEnum.Completed;
 
     @Autowired
     ArrayExpressStudyRepository aeStudyRepository;
