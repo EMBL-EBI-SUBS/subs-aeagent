@@ -68,19 +68,19 @@ public class AeAgentSubsProcessorTest {
 
     @Before
     public void setUp(){
-        Domain domain = new Domain();
-        domain.setName("test domain");
+        Team team = new Team();
+        team.setName("test team");
 
         sa = new Sample();
         sa.setAlias("bob");
         sa.setAccession("S1");
         sa.setArchive(Archive.BioSamples);
-        sa.setDomain(domain);
+        sa.setTeam(team);
 
         st = new Study();
         st.setArchive(Archive.ArrayExpress);
         st.setAlias("study1");
-        st.setDomain(domain);
+        st.setTeam(team);
 
         as = new Assay();
         as.setArchive(Archive.ArrayExpress);
@@ -88,21 +88,21 @@ public class AeAgentSubsProcessorTest {
 
         as.getSampleUses().add(new SampleUse((SampleRef) sa.asRef()));
         as.setStudyRef((StudyRef)st.asRef());
-        as.setDomain(domain);
+        as.setTeam(team);
 
         ad = new AssayData();
         ad.setAlias("run1");
         ad.setArchive(Archive.ArrayExpress);
         ad.setAssayRef((AssayRef) as.asRef());
-        ad.setDomain(domain);
+        ad.setTeam(team);
 
         enaStudy = new Study();
         enaStudy.setArchive(Archive.Ena);
         enaStudy.setAlias("not to be accessioned here");
-        enaStudy.setDomain(domain);
+        enaStudy.setTeam(team);
 
         sub = new FullSubmission();
-        sub.setDomain(domain);
+        sub.setTeam(team);
         sub.getSamples().add(sa);
         sub.getStudies().add(st);
         sub.getAssays().add(as);
