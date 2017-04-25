@@ -12,19 +12,20 @@ import uk.ac.ebi.subs.arrayexpress.model.ArrayExpressStudy;
 import uk.ac.ebi.subs.arrayexpress.model.SampleDataRelationship;
 import uk.ac.ebi.subs.arrayexpress.repo.ArrayExpressStudyRepository;
 import uk.ac.ebi.subs.arrayexpress.repo.SampleDataRelatioshipRepository;
-
-import uk.ac.ebi.subs.data.FullSubmission;
-import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
-import uk.ac.ebi.subs.data.submittable.Sample;
-import uk.ac.ebi.subs.processing.*;
 import uk.ac.ebi.subs.data.component.Archive;
 import uk.ac.ebi.subs.data.component.SampleUse;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 import uk.ac.ebi.subs.data.submittable.Assay;
 import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.data.submittable.Sample;
 import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.messaging.Exchanges;
 import uk.ac.ebi.subs.messaging.Queues;
 import uk.ac.ebi.subs.messaging.Topics;
+import uk.ac.ebi.subs.processing.ProcessingCertificate;
+import uk.ac.ebi.subs.processing.ProcessingCertificateEnvelope;
+import uk.ac.ebi.subs.processing.SubmissionEnvelope;
+import uk.ac.ebi.subs.processing.UpdatedSamplesEnvelope;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -105,7 +106,7 @@ public class ArrayExpressSubmissionProcessor {
 
         List<ProcessingCertificate> certs = new ArrayList<>();
 
-        submissionEnvelope.getSubmission().getStudies().stream()
+        submissionEnvelope.getStudies().stream()
                 .filter(s -> s.getArchive() == Archive.ArrayExpress)
                 .forEach(s -> certs.addAll(processStudy(s, submissionEnvelope)));
 
@@ -114,7 +115,6 @@ public class ArrayExpressSubmissionProcessor {
 
     public List<ProcessingCertificate> processStudy(Study study, SubmissionEnvelope submissionEnvelope) {
         List<ProcessingCertificate> certs = new ArrayList<>();
-        FullSubmission submission = submissionEnvelope.getSubmission();
 
         if (!study.isAccessioned()) {
             study.setAccession("AE-MTAB-" + UUID.randomUUID());
@@ -128,7 +128,7 @@ public class ArrayExpressSubmissionProcessor {
                 new ProcessingCertificate(study,Archive.ArrayExpress, ProcessingStatusEnum.Curation,arrayExpressStudy.getAccession()));
 
 
-        submission.getAssays().stream()
+        submissionEnvelope.getAssays().stream()
                 .filter(a -> a.getArchive() == Archive.ArrayExpress && a.getStudyRef().isMatch(study))
                 .forEach(a -> certs.addAll(processAssay(a,submissionEnvelope,arrayExpressStudy)));
 
@@ -146,8 +146,6 @@ public class ArrayExpressSubmissionProcessor {
     public List<ProcessingCertificate> processAssay(Assay assay, SubmissionEnvelope submissionEnvelope, ArrayExpressStudy arrayExpressStudy){
         List<ProcessingCertificate> certs = new ArrayList<>();
 
-        FullSubmission submission = submissionEnvelope.getSubmission();
-
         SampleDataRelationship sdr = new SampleDataRelationship();
         sdr.setId(UUID.randomUUID().toString());
         sdr.setAssay(assay);
@@ -156,7 +154,7 @@ public class ArrayExpressSubmissionProcessor {
 
         //find sample
         for (SampleUse su : assay.getSampleUses()){
-            Sample s = su.getSampleRef().fillIn(submission.getSamples(),submissionEnvelope.getSupportingSamples());
+            Sample s = su.getSampleRef().fillIn(submissionEnvelope.getSamples(),submissionEnvelope.getSupportingSamples());
 
             if (s == null){
                 throw new RuntimeException("No sample found for "+su.getSampleRef());
@@ -169,7 +167,7 @@ public class ArrayExpressSubmissionProcessor {
         sdr.setSampleUses(assay.getSampleUses());
 
         //find assay data
-        List<AssayData> assayData = submission.getAssayData().stream()
+        List<AssayData> assayData = submissionEnvelope.getAssayData().stream()
                 .filter(ad -> ad.getArchive() == Archive.ArrayExpress && ad.getAssayRef().isMatch(assay))
                 .collect(Collectors.toList());
 

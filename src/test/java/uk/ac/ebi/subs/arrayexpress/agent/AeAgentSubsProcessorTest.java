@@ -7,13 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import uk.ac.ebi.subs.ArrayExpressAgentApplication;
-
-import uk.ac.ebi.subs.data.FullSubmission;
+import uk.ac.ebi.subs.data.Submission;
+import uk.ac.ebi.subs.data.component.*;
+import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
+import uk.ac.ebi.subs.data.submittable.Assay;
+import uk.ac.ebi.subs.data.submittable.AssayData;
+import uk.ac.ebi.subs.data.submittable.Sample;
+import uk.ac.ebi.subs.data.submittable.Study;
 import uk.ac.ebi.subs.processing.ProcessingCertificate;
 import uk.ac.ebi.subs.processing.SubmissionEnvelope;
-import uk.ac.ebi.subs.data.component.*;
-import uk.ac.ebi.subs.data.submittable.*;
-import uk.ac.ebi.subs.data.status.ProcessingStatusEnum;
 
 import java.util.List;
 
@@ -25,7 +27,7 @@ import static org.junit.Assert.assertThat;
 public class AeAgentSubsProcessorTest {
 
     SubmissionEnvelope subEnv;
-    FullSubmission sub;
+    Submission sub;
     Sample sa;
     Study st;
     Assay as;
@@ -101,13 +103,14 @@ public class AeAgentSubsProcessorTest {
         enaStudy.setAlias("not to be accessioned here");
         enaStudy.setTeam(team);
 
-        sub = new FullSubmission();
-        sub.setTeam(team);
-        sub.getSamples().add(sa);
-        sub.getStudies().add(st);
-        sub.getAssays().add(as);
-        sub.getAssayData().add(ad);
+        sub = new Submission();
 
         subEnv = new SubmissionEnvelope(sub);
+        subEnv.getSubmission().setTeam(team);
+        subEnv.getSamples().add(sa);
+        subEnv.getStudies().add(st);
+        subEnv.getAssays().add(as);
+        subEnv.getAssayData().add(ad);
+
     }
 }
